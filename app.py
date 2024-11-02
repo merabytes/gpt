@@ -5,6 +5,7 @@ import logging
 import uuid
 import httpx
 import asyncio
+import binascii
 from quart import (
     Blueprint,
     Quart,
@@ -409,6 +410,11 @@ async def conversation():
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
     request_json = await request.get_json()
+
+    # Transform the content of each message to hexadecimal encoded text
+    for message in request_json.get("messages", []):
+        if 'content' in message:
+            message['content'] = binascii.hexlify(message['content'].encode()).decode()
 
     return await conversation_internal(request_json, request.headers)
 
